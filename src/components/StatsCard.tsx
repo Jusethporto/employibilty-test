@@ -4,11 +4,7 @@ interface StatsCardProps {
   variant?: 'success' | 'danger' | 'warning' | 'default';
 }
 
-export default function StatsCard({
-  title,
-  value,
-  variant = 'default',
-}: StatsCardProps) {
+export default function StatsCard({title, value, variant = 'default',}: StatsCardProps) {
   const colorMap = {
     success: 'text-success',
     danger: 'text-danger',
