@@ -2,17 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-interface Character {
-  id: number;
-  name: string;
-  status: string;
-  species: string;
-  image: string;
-}
-
-interface ApiResponse {
-  results: Character[];
-}
+import { getCharacters } from '@/services/api';
+import type { Character, CharacterStats } from '@/types/character';
 
 export default function DashboardPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -21,25 +12,30 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  
-  const [stats, setStats] = useState<any>({});
+  const [stats, setStats] = useState<CharacterStats>({
+    total: 0,
+    alive: 0,
+    dead: 0,
+    unknown: 0,
+  });
 
   useEffect(() => {
-    fetchCharacters();
+    void fetchCharacters();
   }, []);
 
   const fetchCharacters = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('https://rickandmortyapi.com/api/character');
-      const data: ApiResponse = await response.json();
+    setLoading(true);
+    setError(null);
 
-      setCharacters(data.results);
-      setFilteredCharacters(data.results);
-      calculateStats(data.results);
-    } catch (err: any) {
-      setError(err.message || 'Error inesperado');
+    try {
+      const data = await getCharacters();
+      setCharacters(data);
+      setFilteredCharacters(data);
+      calculateStats(data);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Error inesperado al cargar personajes';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -74,7 +70,7 @@ export default function DashboardPage() {
     setFilteredCharacters(temp);
   }, [search, statusFilter, characters]);
 
-  
+
   const totalCharacters = useMemo(() => {
     return filteredCharacters.length;
   }, [filteredCharacters]);
@@ -130,7 +126,7 @@ export default function DashboardPage() {
       {/* Filtros */}
       <div
         className="mb-4 p-3 rounded"
-        style={{ backgroundColor: '#f8f9fa' }} 
+        style={{ backgroundColor: '#f8f9fa' }}
       >
         <div className="row g-2">
           <div className="col-md-6">
@@ -178,13 +174,12 @@ export default function DashboardPage() {
                 <h5 className="card-title">{character.name}</h5>
                 <p className="card-text">
                   <span
-                    className={`badge ${
-                      character.status === 'Alive'
+                    className={`badge ${character.status === 'Alive'
                         ? 'bg-success'
                         : character.status === 'Dead'
-                        ? 'bg-danger'
-                        : 'bg-secondary'
-                    }`}
+                          ? 'bg-danger'
+                          : 'bg-secondary'
+                      }`}
                   >
                     {character.status}
                   </span>
