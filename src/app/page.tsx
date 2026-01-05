@@ -1,6 +1,6 @@
 'use client'
 import { getCharacters } from "@/services/api"
-import { Card } from "../components/Card"
+import { Card } from "@/app/components/Card"
 import { useEffect, useState } from "react"
 
 export default function Home() {
